@@ -18,7 +18,7 @@ namespace CarApp
     public partial class InspectionTableForm : Form
     {
         CarContext db;
-        Car addCar;
+        
         int selectRow;
         //string selectRow;
 
@@ -64,16 +64,18 @@ namespace CarApp
 
             Inspection inspection = new Inspection();
 
-            List<Car> cars = db.Cars.ToList();
-            for (int i = 0; i < cars.Count;i++ )
-            {
-                if (cars[i].Id == selectRow)
-                {
-                    addCar = cars[i];
-                    break;
-                }
+            Car addCar = db.Cars.Find(selectRow);
 
-            }
+            //List<Car> cars = db.Cars.ToList();
+            //for (int i = 0; i < cars.Count;i++ )
+            //{
+            //    if (cars[i].Id == selectRow)
+            //    {
+            //        addCar = cars[i];
+            //        break;
+            //    }
+
+            //}
 
             inspection.DateInspection = frmIns.dateTimePickerDateInspection.Text;
             inspection.NumberInspection = Convert.ToInt32(frmIns.textBoxNumberInspection.Text);
@@ -105,20 +107,21 @@ namespace CarApp
                 frmIns.dateTimePickerDateInspection.Text = inspection.DateInspection;
                 frmIns.textBoxNumberInspection.Text = Convert.ToString(inspection.NumberInspection);
 
+                //Car addCar = db.Cars.Find(selectRow);   добавил потом
 
-                List<Car> cars = db.Cars.ToList();
+                //List<Car> cars = db.Cars.ToList();
 
-                if (inspection.Car != null)
-                    for (int i = 0; i < cars.Count; i++)
-                    {
-                        if (cars[i].Id == selectRow)
-                        {
-                            addCar = cars[i];
-                            break;
-                        }
+                //if (inspection.Car != null)
+                //    for (int i = 0; i < cars.Count; i++)
+                //    {
+                //        if (cars[i].Id == selectRow)
+                //        {
+                //            addCar = cars[i];
+                //            break;
+                //        }
 
-                    }
-                addCar.Id = inspection.Car.Id;
+                //    }
+                //addCar.Id = inspection.Car.Id;
 
                 DialogResult result = frmIns.ShowDialog(this);
 
@@ -128,7 +131,7 @@ namespace CarApp
                 inspection.DateInspection = frmIns.dateTimePickerDateInspection.Text;
                 inspection.NumberInspection = Convert.ToInt32(frmIns.textBoxNumberInspection.Text);
 
-                inspection.Car = (Car)addCar;
+                //inspection.Car = (Car)addCar;
 
                 db.Entry(inspection).State = EntityState.Modified;
                 db.SaveChanges();
