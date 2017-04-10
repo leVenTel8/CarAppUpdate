@@ -164,6 +164,7 @@ namespace CarApp
             }
             else
                 MessageBox.Show("Таблица <Авто> пуста! \n заполните необходимые поля");
+            MessageBox.Show("Таблица <Авто> пуста! \n заполните необходимые поля");
 
             //int SelectRowInMainForm = Convert.ToInt32(this.dataGridViewMainForm[0, dataGridViewMainForm.CurrentRow.Index].Value.ToString());
             //MessageBox.Show("выбранная строка" + SelectRowInMainForm);
