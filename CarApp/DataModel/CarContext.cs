@@ -18,5 +18,21 @@ namespace CarApp.DataModel
         public DbSet<Inspection> Inspections { get; set; }
         public DbSet<Car> Cars { get; set; }
 
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        //{
+        //    modelBuilder.Entity<Student>()
+        //        .HasOptional<Standard>(s => s.Standard)
+        //        .WithMany()
+        //        .WillCascadeOnDelete(false);
+
+        //}
+        {
+            modelBuilder.Entity<Inspection>()
+                .HasOptional<Car>(s => s.Car)
+                .WithMany()
+                .WillCascadeOnDelete(true);
+
+        }
+
     }
 }

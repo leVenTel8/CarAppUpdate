@@ -27,7 +27,7 @@ namespace CarApp
 
             db = new CarContext();
             db.Inspections.Load();
-            db.Cars.Load();
+            //db.Cars.Load();
 
             dataGridViewInspectionTableForm.DataSource = db.Inspections.Where(p => p.CarId == selectRow).ToList();
 
@@ -43,7 +43,7 @@ namespace CarApp
 
             this.selectRow = selectRowMainForm;                                             //вот так работает рефреш и правльно
 
-            db.Inspections.Where(p => p.CarId == selectRowMainForm).Load();                 // привязывается dataGrid
+            db.Inspections.Where(p => p.CarId == selectRow).Load();                         // привязывается dataGrid
             dataGridViewInspectionTableForm.DataSource = db.Inspections.Local.ToBindingList();
 
         }

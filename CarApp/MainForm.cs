@@ -16,10 +16,11 @@ namespace CarApp
 {
     public partial class MainForm : Form
     {
-        CarContext db;
+        //CarContext db;
 
         public MainForm()
         {
+
             InitializeComponent();
 
             db = new CarContext();
@@ -103,7 +104,9 @@ namespace CarApp
                 if (converted == false)
                     return;
 
-                db.Inspections.Load();
+                //db.Cars.Load();
+                //db.Inspections.Load();
+                
                 Car car = db.Cars.Find(id);
 
                 db.Cars.Remove(car);
