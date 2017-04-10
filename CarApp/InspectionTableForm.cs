@@ -39,12 +39,12 @@ namespace CarApp
             InitializeComponent();
 
             db = new CarContext();
-            db.Inspections.Load();
             db.Cars.Load();
 
-            this.selectRow = selectRowMainForm;
+            this.selectRow = selectRowMainForm;                                             //вот так работает рефреш и правльно
 
-            dataGridViewInspectionTableForm.DataSource = db.Inspections.Where(p => p.CarId == selectRow).ToList();
+            db.Inspections.Where(p => p.CarId == selectRowMainForm).Load();                 // привязывается dataGrid
+            dataGridViewInspectionTableForm.DataSource = db.Inspections.Local.ToBindingList();
 
         }
         
@@ -69,8 +69,6 @@ namespace CarApp
             db.Inspections.Add(inspection);
             db.SaveChanges();
 
-            //рефреш, запускается только после добавления второго экземпляра
-            dataGridViewInspectionTableForm.DataSource = db.Inspections.Where(p => p.CarId == selectRow).ToList(); // обновляем грид
             MessageBox.Show("Объект обновлен");
 
         }
@@ -103,7 +101,7 @@ namespace CarApp
                 db.Entry(inspection).State = EntityState.Modified;
                 db.SaveChanges();
 
-                dataGridViewInspectionTableForm.DataSource = db.Inspections.Where(p => p.CarId == selectRow).ToList(); // обновляем грид
+                dataGridViewInspectionTableForm.Refresh();
                 MessageBox.Show("Объект обновлен");
             }
         }
@@ -125,7 +123,6 @@ namespace CarApp
                 db.Inspections.Remove(player);
                 db.SaveChanges();
 
-                dataGridViewInspectionTableForm.DataSource = db.Inspections.Where(p => p.CarId == selectRow).ToList();
                 MessageBox.Show("Объект удален");
                 
             }
