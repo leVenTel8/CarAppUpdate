@@ -16,131 +16,139 @@ namespace CarApp
 {
     public partial class MainForm : Form
     {
-        //CarContext db;
 
         public MainForm()
         {
-
             InitializeComponent();
-
-            db = new CarContext();
-            db.Cars.Load();
-            db.Inspections.Load();
-
-            dataGridViewMainForm.DataSource = db.Cars.Local.ToBindingList();
+            using (var db = new CarContext())
+            {
+                ////dataGridViewMainForm.DataSource = db.Cars.Local.ToBindingList();
+                 dataGridViewMainForm.DataSource = db.Cars.ToList();
+            }
 
         }
 
         // кнопка добавления объекта Car на главную форму
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            CarForm frmAddCar = new CarForm();
-            DialogResult result = frmAddCar.ShowDialog(this);                            
 
-            if (result == DialogResult.Cancel)
-                return;
+                CarForm frmAddCar = new CarForm();
+                DialogResult result = frmAddCar.ShowDialog(this);
 
-            Car car = new Car();
-            car.Model = frmAddCar.textBoxModel.Text;
-            car.YearMade = Convert.ToInt32(frmAddCar.textBoxYearMade.Text);
-            car.GosNumber = frmAddCar.textBoxGosNumber.Text;
-            car.DateRegistration = frmAddCar.dateTimePickerDateRegistration.Text;
+                if (result == DialogResult.Cancel)
+                    return;
 
-            db.Cars.Add(car);
-            db.SaveChanges();
+                Car car = new Car();
+                car.Model = frmAddCar.textBoxModel.Text;
+                car.YearMade = Convert.ToInt32(frmAddCar.textBoxYearMade.Text);
+                car.GosNumber = frmAddCar.textBoxGosNumber.Text;
+                car.DateRegistration = frmAddCar.dateTimePickerDateRegistration.Text;
+                using (var db = new CarContext())
+                {
+                db.Cars.Add(car);
+                db.SaveChanges();
+                dataGridViewMainForm.DataSource = db.Cars.ToList();
+                }
+                
+                MessageBox.Show("Новый объект добавлен");
 
-            MessageBox.Show("Новый объект добавлен");
         }
 
         // кнопка редактирования объекта Car на главной форме
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            if (dataGridViewMainForm.SelectedRows.Count > 0)
-            {
-                int index = dataGridViewMainForm.SelectedRows[0].Index;
-                int id = 0;
-                bool converted = Int32.TryParse(dataGridViewMainForm[0, index].Value.ToString(), out id);
 
-                if (converted == false)
-                    return;
+                if (dataGridViewMainForm.SelectedRows.Count > 0)
+                {
+                    int index = dataGridViewMainForm.SelectedRows[0].Index;
+                    int id = 0;
+                    bool converted = Int32.TryParse(dataGridViewMainForm[0, index].Value.ToString(), out id);
 
-                Car car = db.Cars.Find(id);
-              
-                CarForm frmEditCar = new CarForm();
+                    if (converted == false)
+                        return;
+                    using (var db = new CarContext())
+                    {
+                        Car car = db.Cars.Find(id);
 
-                frmEditCar.textBoxModel.Text = car.Model;
-                frmEditCar.textBoxYearMade.Text = Convert.ToString(car.YearMade);
-                frmEditCar.textBoxGosNumber.Text = car.GosNumber;
-                frmEditCar.dateTimePickerDateRegistration.Text = car.DateRegistration;
+                        CarForm frmEditCar = new CarForm();
 
-                DialogResult result = frmEditCar.ShowDialog(this);
+                        frmEditCar.textBoxModel.Text = car.Model;
+                        frmEditCar.textBoxYearMade.Text = Convert.ToString(car.YearMade);
+                        frmEditCar.textBoxGosNumber.Text = car.GosNumber;
+                        frmEditCar.dateTimePickerDateRegistration.Text = car.DateRegistration;
 
-                if (result == DialogResult.Cancel)
-                    return;
+                        DialogResult result = frmEditCar.ShowDialog(this);
 
-                car.Model = frmEditCar.textBoxModel.Text;
-                car.YearMade = Convert.ToInt32(frmEditCar.textBoxYearMade.Text);
-                car.GosNumber = frmEditCar.textBoxGosNumber.Text;
-                car.DateRegistration = frmEditCar.dateTimePickerDateRegistration.Text;
+                        if (result == DialogResult.Cancel)
+                            return;
 
-                db.Entry(car).State = EntityState.Modified;
-                db.SaveChanges();
-                dataGridViewMainForm.Refresh(); // обновляем грид
-                MessageBox.Show("Объект обновлен");
+                        car.Model = frmEditCar.textBoxModel.Text;
+                        car.YearMade = Convert.ToInt32(frmEditCar.textBoxYearMade.Text);
+                        car.GosNumber = frmEditCar.textBoxGosNumber.Text;
+                        car.DateRegistration = frmEditCar.dateTimePickerDateRegistration.Text;
 
+                        db.Entry(car).State = EntityState.Modified;
+                        db.SaveChanges();
+                        dataGridViewMainForm.DataSource = db.Cars.ToList();
+                        //dataGridViewMainForm.Refresh(); // обновляем грид
+                        MessageBox.Show("Объект обновлен");
+                    }
+                
             }
         }
 
         // кнопка удаления объекта Car с главной формы
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (dataGridViewMainForm.SelectedRows.Count > 0)
-            {
+                if (dataGridViewMainForm.SelectedRows.Count > 0)
+                {
 
-                int index = dataGridViewMainForm.SelectedRows[0].Index;
-                int id = 0;
-                bool converted = Int32.TryParse(dataGridViewMainForm[0, index].Value.ToString(), out id);
+                    int index = dataGridViewMainForm.SelectedRows[0].Index;
+                    int id = 0;
+                    bool converted = Int32.TryParse(dataGridViewMainForm[0, index].Value.ToString(), out id);
 
-                if (converted == false)
-                    return;
+                    if (converted == false)
+                        return;
 
-                //db.Cars.Load();
-                //db.Inspections.Load();
-                
-                Car car = db.Cars.Find(id);
+                    using (var db = new CarContext())
+                    {
+                        Car car = db.Cars.Find(id);
 
-                db.Cars.Remove(car);
-                db.SaveChanges();
-
-                MessageBox.Show("Объект удален");
-
+                        db.Cars.Remove(car);
+                        db.SaveChanges();
+                        dataGridViewMainForm.DataSource = db.Cars.ToList();
+                    }
+                    MessageBox.Show("Объект удален");              
             }
         }
 
         //кнопка отчета по таблице MainForm
         private void btnReport_Click(object sender, EventArgs e)
         {
-            ReportCarForm frmRepCar = new ReportCarForm();
+            using (var db = new CarContext())
+            {
+                ReportCarForm frmRepCar = new ReportCarForm();
 
-            DateTime curdate = DateTime.Now;                                                
-            int year = curdate.Year;
-            int ThreeYear = year - 3;
+                DateTime curdate = DateTime.Now;
+                int year = curdate.Year;
+                int ThreeYear = year - 3;
 
-            int size = db.Cars.Count();
-            frmRepCar.labelTotalCars.Text = "Всего автомобилей: " + Convert.ToString(size);
+                int size = db.Cars.Count();
+                frmRepCar.labelTotalCars.Text = "Всего автомобилей: " + Convert.ToString(size);
 
-            var user = db.Cars.Where(p => p.YearMade < ThreeYear);
-            int nElems = user.Count();
-            frmRepCar.labelCarsOldThreeYear.Text = "Количество автомобилей старше 3 лет:" + Convert.ToString(nElems);
+                var user = db.Cars.Where(p => p.YearMade < ThreeYear);
+                int nElems = user.Count();
+                frmRepCar.labelCarsOldThreeYear.Text = "Количество автомобилей старше 3 лет:" + Convert.ToString(nElems);
 
-            var user1 = db.Cars.Where(p => p.YearMade > ThreeYear);
-            int nEl = user1.Count();
-            frmRepCar.labelCarsYongThreeYear.Text = "Количество автомобилей младше 3 лет:" + Convert.ToString(nEl);
+                var user1 = db.Cars.Where(p => p.YearMade > ThreeYear);
+                int nEl = user1.Count();
+                frmRepCar.labelCarsYongThreeYear.Text = "Количество автомобилей младше 3 лет:" + Convert.ToString(nEl);
 
-            DialogResult result = frmRepCar.ShowDialog(this);
+                DialogResult result = frmRepCar.ShowDialog(this);
 
-            if (result == DialogResult.Cancel)
-                return;
+                if (result == DialogResult.Cancel)
+                    return;
+            }
                 
         }
 
@@ -149,15 +157,12 @@ namespace CarApp
         {
             if (dataGridViewMainForm.SelectedRows.Count > 0)
             {
-
                 int index = dataGridViewMainForm.SelectedRows[0].Index;
                 int id = 0;
                 bool converted = Int32.TryParse(dataGridViewMainForm[0, index].Value.ToString(), out id);
 
                 if (converted == false)
-
                     return;
-
 
                 int SelectRowInMainForm = Convert.ToInt32(this.dataGridViewMainForm[0, dataGridViewMainForm.CurrentRow.Index].Value.ToString());
 
@@ -167,7 +172,6 @@ namespace CarApp
             }
             else
                 MessageBox.Show("Таблица <Авто> пуста! \n заполните необходимые поля");
-           
-        }
+        }    
     }
 }

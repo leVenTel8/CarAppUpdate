@@ -16,100 +16,103 @@ using CarApp.DataModel;
 namespace CarApp
 {
     public partial class InspectionTableForm : Form
-    {
-        CarContext db;
-        
+    {       
         int selectRow;
                   
         public InspectionTableForm()
         {
-            InitializeComponent();
+            using (var db = new CarContext())
+            {
+                InitializeComponent();
 
-            db = new CarContext();
-            db.Inspections.Load();
-            //db.Cars.Load();
+                dataGridViewInspectionTableForm.DataSource = db.Inspections.Where(p => p.CarId == selectRow).ToList();
 
-            dataGridViewInspectionTableForm.DataSource = db.Inspections.Where(p => p.CarId == selectRow).ToList();
-
+            }
         }
 
         //перегруженный конструктор для получения значения выбранной строки
         public InspectionTableForm(int selectRowMainForm)
         {
-            InitializeComponent();
+            using (var db = new CarContext())
+            {
+                InitializeComponent();
 
-            db = new CarContext();
-            db.Cars.Load();
+                this.selectRow = selectRowMainForm;                                             //вот так работает рефреш и правльно
 
-            this.selectRow = selectRowMainForm;                                             //вот так работает рефреш и правльно
-
-            db.Inspections.Where(p => p.CarId == selectRow).Load();                         // привязывается dataGrid
-            dataGridViewInspectionTableForm.DataSource = db.Inspections.Local.ToBindingList();
-
+                //db.Inspections.Where(p => p.CarId == selectRow).Load();                         // привязывается dataGrid
+                //dataGridViewInspectionTableForm.DataSource = db.Inspections.Local.ToBindingList();
+                dataGridViewInspectionTableForm.DataSource = db.Inspections.Where(p => p.CarId == selectRow).ToList();
+            }
         }
-        
 
         //кнопка добавления объекта Inspection в таблицу InspectionTableForm
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            InspectionForm frmIns = new InspectionForm();
-            DialogResult result = frmIns.ShowDialog(this);
 
-            if (result == DialogResult.Cancel)
-                return;
+                InspectionForm frmIns = new InspectionForm();
+                DialogResult result = frmIns.ShowDialog(this);
 
-            Inspection inspection = new Inspection();
+                if (result == DialogResult.Cancel)
+                    return;
+                using (var db = new CarContext())
+                {
+                    Inspection inspection = new Inspection();
 
-            Car addCar = db.Cars.Find(selectRow);
+                    Car addCar = db.Cars.Find(selectRow);
 
-            inspection.DateInspection = frmIns.dateTimePickerDateInspection.Text;
-            inspection.NumberInspection = Convert.ToInt32(frmIns.textBoxNumberInspection.Text);
-            inspection.Car = (Car)addCar; 
+                    inspection.DateInspection = frmIns.dateTimePickerDateInspection.Text;
+                    inspection.NumberInspection = Convert.ToInt32(frmIns.textBoxNumberInspection.Text);
+                    inspection.Car = (Car)addCar;
 
-            db.Inspections.Add(inspection);
-            db.SaveChanges();
+                    db.Inspections.Add(inspection);
+                    db.SaveChanges();
+                    dataGridViewInspectionTableForm.DataSource = db.Inspections.Where(p => p.CarId == selectRow).ToList();
 
-            MessageBox.Show("Объект обновлен");
+                    MessageBox.Show("Объект обновлен");
 
+                }
         }
 
         //кнопка редактирования выбранного объекта Inspection в таблице InspectionTableForm
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            if (dataGridViewInspectionTableForm.SelectedRows.Count > 0)
-            {
-                int index = dataGridViewInspectionTableForm.SelectedRows[0].Index;
-                int id = 0;
-                bool converted = Int32.TryParse(dataGridViewInspectionTableForm[0, index].Value.ToString(), out id);
-                if (converted == false)
-                    return;
 
-                Inspection inspection = db.Inspections.Find(id);
+                if (dataGridViewInspectionTableForm.SelectedRows.Count > 0)
+                {
+                    int index = dataGridViewInspectionTableForm.SelectedRows[0].Index;
+                    int id = 0;
+                    bool converted = Int32.TryParse(dataGridViewInspectionTableForm[0, index].Value.ToString(), out id);
+                    if (converted == false)
+                        return;
+                    using (var db = new CarContext())
+                    {
+                        Inspection inspection = db.Inspections.Find(id);
 
-                InspectionForm frmIns = new InspectionForm();
-                frmIns.dateTimePickerDateInspection.Text = inspection.DateInspection;
-                frmIns.textBoxNumberInspection.Text = Convert.ToString(inspection.NumberInspection);
+                        InspectionForm frmIns = new InspectionForm();
+                        frmIns.dateTimePickerDateInspection.Text = inspection.DateInspection;
+                        frmIns.textBoxNumberInspection.Text = Convert.ToString(inspection.NumberInspection);
 
-                DialogResult result = frmIns.ShowDialog(this);
+                        DialogResult result = frmIns.ShowDialog(this);
 
-                if (result == DialogResult.Cancel)
-                    return;
+                        if (result == DialogResult.Cancel)
+                            return;
 
-                inspection.DateInspection = frmIns.dateTimePickerDateInspection.Text;
-                inspection.NumberInspection = Convert.ToInt32(frmIns.textBoxNumberInspection.Text);
+                        inspection.DateInspection = frmIns.dateTimePickerDateInspection.Text;
+                        inspection.NumberInspection = Convert.ToInt32(frmIns.textBoxNumberInspection.Text);
 
-                db.Entry(inspection).State = EntityState.Modified;
-                db.SaveChanges();
+                        db.Entry(inspection).State = EntityState.Modified;
+                        db.SaveChanges();
 
-                dataGridViewInspectionTableForm.Refresh();
-                MessageBox.Show("Объект обновлен");
+                        dataGridViewInspectionTableForm.DataSource = db.Inspections.Where(p => p.CarId == selectRow).ToList();
+                        //dataGridViewInspectionTableForm.Refresh();
+                        MessageBox.Show("Объект обновлен");
+                    }
             }
         }
 
         //кнопка удаления выбранного объекта Inspection из таблицы InspectionTableForm
         private void btnDelete_Click(object sender, EventArgs e)
         {
-
             if (dataGridViewInspectionTableForm.SelectedRows.Count > 0)
             {
 
@@ -118,13 +121,16 @@ namespace CarApp
                 bool converted = Int32.TryParse(dataGridViewInspectionTableForm[0, index].Value.ToString(), out id);
                 if (converted == false)
                     return;
+                using (var db = new CarContext())
+                {
+                    Inspection player = db.Inspections.Find(id);
+                    db.Inspections.Remove(player);
+                    db.SaveChanges();
 
-                Inspection player = db.Inspections.Find(id);
-                db.Inspections.Remove(player);
-                db.SaveChanges();
-
+                    dataGridViewInspectionTableForm.DataSource = db.Inspections.Where(p => p.CarId == selectRow).ToList();
+                }
                 MessageBox.Show("Объект удален");
-                
+
             }
         }
 
